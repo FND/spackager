@@ -17,60 +17,69 @@ Options:
 
 import sys
 import os
-import re
 
-from urllib import urlopen
+from urllib2 import urlopen
 from base64 import b64encode
+
+from pyquery import PyQuery as pq
 
 
 def main(args):
     args = [unicode(arg, 'utf-8') for arg in args]
     filename = args[1]
 
-    patterns = {
-        "js": re.compile(r'<script[^>]*src=[\'"](.*?)[\'"][^>]*></script>'),
-        "css": re.compile(r'<link[^>]*rel=[\'"]stylesheet[\'"][^>]*href="(.*?)[\'"][^>]*>'),
-        "img": re.compile(r'<img[^>]*src=[\'"](.*?)[\'"][^>]*>')
-    }
-    original = _readfile(filename)
+    original = _readfile(filename) # XXX: must not be in directory other than CWD!?
+    doc = pq(original)
 
-    references = []
-    for type in patterns.keys():
-        refs = patterns[type].findall(original)
-        references.extend(refs)
+    doc.find('script').each(convert_script)
+    doc.find('link[rel=stylesheet]').each(convert_stylesheet)
+    doc.find('img').each(convert_image)
 
-    resources = {}
-    for uri in references:
-        if uri.startswith("http://") or uri.startswith("https://"): # XXX: ignore HTTPS?
-            resources[uri] = urlopen(uri).read()
-        else:
-            filepath = os.sep.join(uri.split("/"))
-            binary = not (uri.endswith(".js") or uri.endswith(".css")) # XXX: special-casing
-            resources[uri] = _readfile(filepath, binary)
-
-    spa = []
-    for line in original.splitlines():
-        for uri, src in resources.items():
-            if uri in line:
-                if uri.endswith(".js"):
-                    template = "<script>\n%s\n</script>"
-                elif uri.endswith(".css"):
-                    template = "<style>\n%s\n</style>"
-                else: # image
-                    ext = uri.rsplit(".", 1)[1]
-                    template = '<img src="data:image/%s;base64,%s">' % (ext, "%s")
-                    src = b64encode(src)
-                line = template % src
-        spa.append(line)
-
-    filename = filename.replace(".html", ".spa.html")
-    f = open(filename, "w")
-    f.write("\n".join(spa))
+    filename = filename.replace('.html', '.spa.html')
+    html = doc.html()
+    f = open(filename, 'w')
+    f.write(html)
     f.close()
 
-    print "converted %s resources: %s" % (len(resources), filename)
-
     return True
+
+
+def convert_script(node):
+    node = pq(node)
+    uri = node.attr('src')
+    if uri:
+        print 'converting', uri
+        src = _get_uri(uri)
+        node.attr('src', None).text(src) # TODO: delete src attribute altogether?
+
+
+def convert_stylesheet(node):
+    node = pq(node)
+    uri = node.attr('href')
+    if uri:
+        print 'converting', uri
+        css = '<style>\n%s\n</style>' % _get_uri(uri) # TODO: XHTML/HTML4 compatibility
+        pq(css).insertBefore(node)
+        node.remove()
+
+
+def convert_image(node):
+    node = pq(node)
+    uri = node.attr('src')
+    if uri:
+        print 'converting', uri
+        img = _get_uri(uri, binary=True)
+        ext = uri.rsplit('.', 1)[1]
+        data = 'data:image/%s;base64,%s' % (ext, b64encode(img))
+        node.attr('src', data)
+
+
+def _get_uri(uri, binary=False):
+    if uri.startswith('http://') or uri.startswith('https://'): # XXX: ignore HTTPS?
+        return urlopen(uri).read()
+    else:
+        filepath = os.sep.join(uri.split('/'))
+        return _readfile(filepath, binary)
 
 
 def _readfile(filepath, binary=False):
