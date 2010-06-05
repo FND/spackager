@@ -4,7 +4,7 @@
 single-page app compiler
 
 parses an HTML file for external resources (JavaScript, CSS and image files) and
-bakes them into a stand-alone document
+assembles them into a stand-alone document
 
 Usage:
   spa.py [options] <filename>
@@ -12,7 +12,9 @@ Usage:
 Options:
   -l, --no-legacy
     Drop support for legacy browsers (namely Internet Explorer <8).
-    This significantly reduced file sizes and prevents breaking validity.
+    This significantly reduces file size by not duplicating image data, and
+    also prevents breaking validity by not adding MHTML-specific data before
+    the doctyle declaration.
 """
 
 import sys
