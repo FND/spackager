@@ -36,7 +36,7 @@ def main(args):
     doc.find('img').each(convert_image)
 
     filename = filename.replace('.html', '.spa.html')
-    html = doc.html()
+    html = doc.__html__() # using __html__ rather than html method to avoid escaping -- XXX: ?
     f = open(filename, 'w')
     f.write(html)
     f.close()
@@ -49,7 +49,7 @@ def convert_script(node):
     uri = node.attr('src')
     if uri:
         print 'converting', uri
-        src = _get_uri(uri)
+        src = '/*<![CDATA[*/\n%s\n/*]]>*/' % _get_uri(uri)
         node.attr('src', None).text(src) # TODO: delete src attribute altogether?
 
 
@@ -58,7 +58,7 @@ def convert_stylesheet(node):
     uri = node.attr('href')
     if uri:
         print 'converting', uri
-        css = '<style>\n%s\n</style>' % _get_uri(uri) # TODO: XHTML/HTML4 compatibility
+        css = '<style>/*<![CDATA[*/\n%s\n/*]]>*/</style>' % _get_uri(uri) # TODO: XHTML/HTML4 compatibility
         pq(css).insertBefore(node)
         node.remove()
 
