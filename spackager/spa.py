@@ -7,6 +7,8 @@ from base64 import b64encode
 
 from pyquery import PyQuery as pq
 
+from spackager.mhtml import generate_mhtml
+
 
 def compile(filename, legacy_mode=False):
     original = _readfile(filename)
@@ -19,41 +21,12 @@ def compile(filename, legacy_mode=False):
 
     if legacy_mode:
         mhtml = generate_mhtml(doc) # XXX: rename variable
-        html = '%s%s' % (mhtml, html)
+        html = '%s%s' % (mhtml, html) # TODO: MHTML data can also be appended after HTML (retaining validity)!?
 
     filename = filename.replace('.html', '.spa.html') # TODO: configurable
     f = open(filename, 'w')
     f.write(html)
     f.close()
-
-
-def generate_mhtml(doc): # TODO: move to separate module
-    from uuid import uuid4 as uuid
-
-    section_template = """/*
-Content-Type: multipart/related; boundary="_EOT"
-
-%s
-*/
-"""
-    block_template = """--_EOT
-Content-Location:%s
-Content-Transfer-Encoding:base64
-
-%s
-"""
-
-    separator = ';base64,'
-    mdata = []
-    for node in doc.find('img'):
-        node = pq(node) # XXX: ineffiecient; use .each
-        uri = node.attr('src')
-        if separator in uri:
-            data = uri.split(separator)[1] # XXX: unsafe?
-            data_id = 'mhtml_%s' % uuid().hex
-            node.addClass(data_id)
-            mdata.append(block_template % (data_id, data))
-    return section_template % ''.join(mdata)
 
 
 def convert_script(node):
