@@ -29,6 +29,7 @@ from pyquery import PyQuery as pq
 def main(args):
     args = [unicode(arg, 'utf-8') for arg in args]
     filename = args[1]
+    legacy_mode = not ('-l' in args or '--no-legacy' in args) # TODO: optparse
 
     # XXX: hacky?
     if os.sep in filename:
@@ -42,14 +43,47 @@ def main(args):
     doc.find('script').each(convert_script)
     doc.find('link[rel=stylesheet]').each(convert_stylesheet)
     doc.find('img').each(convert_image)
+    html = doc.__html__() # __html__ method avoids escaping -- TODO: retain doctype
+
+    if legacy_mode:
+        mhtml = generate_mhtml(doc) # XXX: rename variable
+        html = '%s%s' % (mhtml, html)
 
     filename = filename.replace('.html', '.spa.html')
-    html = doc.__html__() # using __html__ rather than html method to avoid escaping -- XXX: ?
     f = open(filename, 'w')
     f.write(html)
     f.close()
 
     return True
+
+
+def generate_mhtml(doc): # TODO: move to separate module
+    from uuid import uuid4 as uuid
+
+    section_template = """/*
+Content-Type: multipart/related; boundary="_EOT"
+
+%s
+*/
+"""
+    block_template = """--_EOT
+Content-Location:%s
+Content-Transfer-Encoding:base64
+
+%s
+"""
+
+    separator = ';base64,'
+    mdata = []
+    for node in doc.find('img'):
+        node = pq(node) # XXX: ineffiecient; use .each
+        uri = node.attr('src')
+        if separator in uri:
+            data = uri.split(separator)[1] # XXX: unsafe?
+            data_id = 'mhtml_%s' % uuid().hex
+            node.addClass(data_id)
+            mdata.append(block_template % (data_id, data))
+    return section_template % ''.join(mdata)
 
 
 def convert_script(node):
