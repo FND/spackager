@@ -1,23 +1,5 @@
 #!/usr/bin/env python
 
-"""
-single-page app compiler
-
-parses an HTML file for external resources (JavaScript, CSS and image files) and
-assembles them into a stand-alone document
-
-Usage:
-  spa.py [options] <filename>
-
-Options:
-  -l, --no-legacy
-    Drop support for legacy browsers (namely Internet Explorer <8).
-    This significantly reduces file size by not duplicating image data, and
-    also prevents breaking validity by not adding MHTML-specific data before
-    the doctyle declaration.
-"""
-
-import sys
 import os
 
 from urllib2 import urlopen
@@ -26,17 +8,7 @@ from base64 import b64encode
 from pyquery import PyQuery as pq
 
 
-def main(args):
-    args = [unicode(arg, 'utf-8') for arg in args]
-    legacy_mode = not ('-l' in args or '--no-legacy' in args) # TODO: optparse
-    filename = args[1] if legacy_mode else args[2]
-
-    # XXX: hacky?
-    if os.sep in filename:
-        cwd = os.path.dirname(filename)
-        os.chdir(cwd)
-        filename = os.path.basename(filename)
-
+def compile(filename, legacy_mode=False):
     original = _readfile(filename)
     doc = pq(original)
 
@@ -53,8 +25,6 @@ def main(args):
     f = open(filename, 'w')
     f.write(html)
     f.close()
-
-    return True
 
 
 def generate_mhtml(doc): # TODO: move to separate module
@@ -130,8 +100,3 @@ def _readfile(filepath, binary=False):
     content = f.read()
     f.close()
     return content
-
-
-if __name__ == '__main__':
-    status = not main(sys.argv)
-    sys.exit(status)

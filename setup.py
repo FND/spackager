@@ -1,18 +1,19 @@
 AUTHOR = 'FND'
 AUTHOR_EMAIL = 'FNDo@gmx.net'
-NAME = 'SPA Compiler'
+NAME = 'Spackager'
 DESCRIPTION = 'compiler for creating single-page applications'
-VERSION = '0.2.0'
 
 
 import os
 
 from setuptools import setup, find_packages
 
+from spackager import __version__
+
 
 setup(
     name = NAME,
-    version = VERSION,
+    version = __version__,
     description = DESCRIPTION,
     long_description = open(os.path.join(os.path.dirname(__file__), 'README')).read(),
     author = AUTHOR,
