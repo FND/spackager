@@ -28,8 +28,8 @@ from pyquery import PyQuery as pq
 
 def main(args):
     args = [unicode(arg, 'utf-8') for arg in args]
-    filename = args[1]
     legacy_mode = not ('-l' in args or '--no-legacy' in args) # TODO: optparse
+    filename = args[1] if legacy_mode else args[2]
 
     # XXX: hacky?
     if os.sep in filename:
