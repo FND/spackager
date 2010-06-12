@@ -49,7 +49,7 @@ def main(args):
         mhtml = generate_mhtml(doc) # XXX: rename variable
         html = '%s%s' % (mhtml, html)
 
-    filename = filename.replace('.html', '.spa.html')
+    filename = filename.replace('.html', '.spa.html') # TODO: configurable
     f = open(filename, 'w')
     f.write(html)
     f.close()
@@ -112,13 +112,13 @@ def convert_image(node):
         print 'converting', uri
         img = _get_uri(uri, binary=True)
         ext = uri.rsplit('.', 1)[1]
-        data = 'data:image/%s;base64,%s' % (ext, b64encode(img))
-        node.attr('src', data)
+        uri = 'data:image/%s;base64,%s' % (ext, b64encode(img))
+        node.attr('src', uri)
 
 
 def _get_uri(uri, binary=False):
     if uri.startswith('http://') or uri.startswith('https://'): # XXX: ignore HTTPS?
-        return urlopen(uri).read()
+        return urlopen(uri).read() # TODO: should be optional
     else:
         filepath = os.sep.join(uri.split('/'))
         return _readfile(filepath, binary)
