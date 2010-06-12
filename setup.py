@@ -1,6 +1,6 @@
 AUTHOR = 'FND'
 AUTHOR_EMAIL = 'FNDo@gmx.net'
-NAME = 'Spackager'
+NAME = 'spackager'
 DESCRIPTION = 'compiler for creating single-page applications'
 
 

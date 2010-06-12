@@ -5,8 +5,11 @@ single-page app compiler
 parses an HTML file for external resources (JavaScript, CSS and image files) and
 assembles them into a stand-alone document
 
+http://github.com/FND/spackager
+http://pypi.python.org/pypi/spackager
+
 Usage:
-  spa.py [options] <filename>
+  spac [options] <filename>
 
 Options:
   -l, --no-legacy
