@@ -15,7 +15,7 @@ setup(
     name = NAME,
     version = __version__,
     description = DESCRIPTION,
-    long_description = open(os.path.join(os.path.dirname(__file__), 'README')).read(),
+    long_description = open(os.path.join(os.path.dirname(__file__), 'DESC')).read(),
     author = AUTHOR,
     author_email = AUTHOR_EMAIL,
     url = 'http://pypi.python.org/pypi/%s' % NAME,
