@@ -30,7 +30,13 @@ def main(args):
     args = [unicode(arg, 'utf-8') for arg in args]
     filename = args[1]
 
-    original = _readfile(filename) # XXX: must not be in directory other than CWD!?
+    # XXX: hacky?
+    if os.sep in filename:
+        cwd = os.path.dirname(filename)
+        os.chdir(cwd)
+        filename = os.path.basename(filename)
+
+    original = _readfile(filename)
     doc = pq(original)
 
     doc.find('script').each(convert_script)
