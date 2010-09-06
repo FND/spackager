@@ -1,11 +1,11 @@
 from uuid import uuid4 as uuid
 
 
-SECTION_TEMPLATE = """/*
+SECTION_TEMPLATE = """<!--
 Content-Type: multipart/related; boundary="_EOT"
 
 %s
-*/
+-->
 """
 
 BLOCK_TEMPLATE = """--_EOT
