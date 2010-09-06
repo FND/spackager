@@ -10,9 +10,8 @@ from pyquery import PyQuery as pq
 from spackager.mhtml import generate_mhtml
 
 
-def compile(filename, legacy_mode=False):
-    original = _readfile(filename)
-    doc = pq(original)
+def compile(html, legacy_mode=False):
+    doc = pq(html)
 
     doc.find('script').each(convert_script)
     doc.find('link[rel=stylesheet]').each(convert_stylesheet)
@@ -23,10 +22,7 @@ def compile(filename, legacy_mode=False):
         mhtml = generate_mhtml(doc) # XXX: rename variable
         html = '%s%s' % (mhtml, html) # TODO: MHTML data can also be appended after HTML (retaining validity)!?
 
-    filename = filename.replace('.html', '.spa.html') # TODO: configurable
-    f = open(filename, 'w')
-    f.write(html)
-    f.close()
+    return html
 
 
 def convert_script(node):
