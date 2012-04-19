@@ -21,7 +21,7 @@ def main(args):
     html = compile(original, legacy_mode)
     outfile = filename.replace('.html', '.spa.html') # TODO: configurable (e.g. stdout)
     f = open(outfile, 'w')
-    f.write(html)
+    f.write(html.encode('utf-8'))
     f.close()
 
     return True

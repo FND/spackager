@@ -66,6 +66,7 @@ def _get_uri(uri, binary=False):
 def _readfile(filepath, binary=False):
     mode = 'rb' if binary else 'r'
     f = open(filepath, mode)
-    content = f.read()
+    content = f.read().decode('utf-8')
+
     f.close()
     return content
